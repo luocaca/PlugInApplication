@@ -31,6 +31,20 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:background="@color/colorAccent"
+                android:onClick="toCourseListActivity"
+                android:text="跳转列表界面"
+
+                android:textColor="@android:color/white"
+
+                />
+
+
             <android.support.design.widget.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -146,6 +160,27 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="获取课程列表"
+
+                />
+
+            <me.luocaca.pluginapplication.widget.DispatchScrollView
+                android:layout_width="match_parent"
+                android:layout_height="200dp">
+
+                <TextView
+                    android:id="@+id/courseList"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:hint="这里显示个人信息"
+                    android:textIsSelectable="true" />
+            </me.luocaca.pluginapplication.widget.DispatchScrollView>
+
+
+            <Button
+                android:id="@+id/getCourseList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="获取分类列表"
 
                 />
 

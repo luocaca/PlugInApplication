@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">PlugInApplication</string>
+    <string name="app_name">跑课程外挂</string>
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
     <string name="prompt_user_name">用户名</string>

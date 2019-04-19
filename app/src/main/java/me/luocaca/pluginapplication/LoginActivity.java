@@ -3,7 +3,6 @@ package me.luocaca.pluginapplication;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.CursorLoader;
 import android.content.Loader;
@@ -18,6 +17,7 @@ import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -39,13 +39,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import me.luocaca.pluginapplication.http.HttpManager;
+import me.luocaca.pluginapplication.ui.CourseListActivity;
 import me.luocaca.pluginapplication.util.JsonFormateUtil;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Cookie;
-import okhttp3.CookieJar;
 import okhttp3.FormBody;
-import okhttp3.HttpUrl;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -58,7 +57,7 @@ import static android.Manifest.permission.READ_CONTACTS;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
+public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 
     private static final String TAG = "LoginActivity";
 
@@ -98,7 +97,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         // Set up the login form.
 
 
-        verifycodeImg = findViewById(R.id.verifycodeImg);
+        verifycodeImg = (ImageView) findViewById(R.id.verifycodeImg);
         mEmailView = (AutoCompleteTextView) findViewById(R.id.userName);
         populateAutoComplete();
 
@@ -131,105 +130,18 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
             public void onClick(View view) {
 
 
-                //点击获取个人信息
-
-                OkHttpClient client = new OkHttpClient.Builder().cookieJar(new CookieJar() {
-                    @Override
-                    public void saveFromResponse(HttpUrl url, List<Cookie> coo) {
-//                        LoginActivity.this.cookies = cookies;
-
-
-                        Log.i(TAG, "saveFromResponse: " + coo.get(0).toString());
-
-
-                        Cookie cookie = coo.get(0);
-
-
-                        try {
-                            if (!cookies.contains(cookie))
-                                cookies.add(cookie);
-                        } catch (Exception e) {
-
-                            Log.w(TAG, "saveFromResponse: " + e.getMessage());
-                        }
-
-//                        cookies.addAll(coo);
-
-
-//                        for (int i = 0; i < cookies.size(); i++) {
-//                            if (!LoginActivity.this.cookies.contains(cookies.get(i))) {
-//
-//
-//                                LoginActivity.this.cookies.addAll(cookies);
-//
-//
-//
-//
-//                            } else {
-//                                Log.i(TAG, "saveFromResponse: no contain to add");
-//                            }
-//
-//                        }
-
-
-                        for (int i = 0; i < cookies.size(); i++) {
-                            Log.i(TAG, "cookie: " + cookies.get(i).toString());
-                        }
-
-                    }
-
-                    @Override
-                    public List<Cookie> loadForRequest(HttpUrl url) {
-                        return cookies;
-                    }
-                }).build();
-
                 final Request request = new Request.Builder()
-
                         .url("http://www.ahjxjy.cn/study/home/userInfo?courseOpenId=gbrqan2ppl1jeegaopet9g&schoolCode=003")
                         .get()
-//                        .addHeader("Cookie", "ASP.NET_SessionId=unestvsstmq0nxbe0053edeb; auth=0102535F805D48C2D608FE531FEA8711C3D6080016680073006F00660061006E006500700079007A00760067002D0078006200730034006300640032003000670000012F00FFA72219F26454785012FC48D22FD0DE6A9DFD3FB7")
-//                        .addHeader("Cookie", "auth=0102535F805D48C2D608FE531FEA8711C3D6080016680073006F00660061006E006500700079007A00760067002D0078006200730034006300640032003000670000012F00FFA72219F26454785012FC48D22FD0DE6A9DFD3FB7")
-//                        .addHeader("Cookie", "lStatistic=jty46bb1; ASP.NET_SessionId=n4d4k1pwwku1sgohynwyjohs; jwplayer.captionLabel=Off; auth=0102D4DF07DDDEC2D608FED49F7107A8C3D608001662006A0075007800610064006B00710074007A007800670077006500710075006700670070006F002D00770000012F00FF791B45F37A8089EDE0266FBFA2B3B93C71990A60")
                         .addHeader("cache-control", "no-cache")
                         .addHeader("postman-token", "9282cee6-4c60-4761-a5af-3422be56be9a")
                         .build();
 
-                client.newCall(request).enqueue(new Callback() {
+                HttpManager.getInstance().doRequest(request, new HttpManager.OnResponse() {
                     @Override
-                    public void onFailure(Call call, final IOException e) {
-                        final TextView tv = findViewById(R.id.info);
-                        tv.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    tv.setText(e.getMessage());
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-
-                            }
-                        });
-
-                    }
-
-                    @Override
-                    public void onResponse(Call call, final Response response) throws IOException {
-                        final TextView tv = findViewById(R.id.info);
-
-
-                        tv.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    Log.w(TAG, "run: " + Thread.currentThread());
-                                    tv.setText(JsonFormateUtil.formatJson(response.body().string()) + "\n");
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-
-                            }
-                        });
+                    public void onResponse(Call call, Response response, String resultJson) {
+                        final TextView tv = (TextView) findViewById(R.id.info);
+                        tv.setText(resultJson);
                     }
                 });
 
@@ -242,54 +154,6 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
             @Override
             public void onClick(View view) {
 
-
-                Toast.makeText(LoginActivity.this, "hhh", Toast.LENGTH_SHORT).show();
-
-                //点击获取个人信息
-
-                OkHttpClient client = new OkHttpClient.Builder().cookieJar(new CookieJar() {
-                    @Override
-                    public void saveFromResponse(HttpUrl url, List<Cookie> co) {
-
-
-                        Cookie cookie1 = co.get(0);
-
-
-                        try {
-                            cookies.add(cookie1);
-                        } catch (Exception e) {
-
-                        }
-
-//                        Iterator iterator = co.iterator();
-//
-//                        while (iterator.hasNext()) {
-//                            Object next = iterator.next();
-//                            if (!cookies.contains(next)) {
-//                                cookies.add((Cookie) next);
-//                            }
-//
-//                        }
-
-//                        for (int i = 0; i < cookies.size(); i++) {
-//                            Cookie cookie = co.get(i);
-//                            if (!cookies.contains(cookie)) {
-//                                cookies.add(cookie);
-//                            }
-//                        }
-
-                        for (Cookie cookie : cookies) {
-                            Log.i(TAG, "getList -- cookie: " + cookie.toString());
-                        }
-
-
-                    }
-
-                    @Override
-                    public List<Cookie> loadForRequest(HttpUrl url) {
-                        return cookies;
-                    }
-                }).build();
 
                 final Request request = new Request.Builder()
                         .url("http://www.ahjxjy.cn/study/design/design?courseOpenId=gbrqan2plyjebi2f1vfkpa&schoolCode=003")
@@ -309,40 +173,51 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                         .addHeader("postman-token", "9282cee6-4c60-4761-a5af-3422be56be9a")
                         .build();
 
-                client.newCall(request).enqueue(new Callback() {
-                    @Override
-                    public void onFailure(Call call, final IOException e) {
-                        final TextView tv = findViewById(R.id.list);
-//                        tv.postDelayed(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                try {
-//                                    tv.setText(e.getMessage());
-//                                } catch (Exception e) {
-//                                    e.printStackTrace();
-//                                }
-//
-//                            }
-//                        },0);
 
+                HttpManager.getInstance().doRequest(request, new HttpManager.OnResponse() {
+                    @Override
+                    public void onResponse(Call call, Response response, String resultJson) {
+                        final TextView tv = (TextView) findViewById(R.id.list);
+                        Log.i(TAG, "onResponse: " + resultJson);
+                        tv.append(resultJson + "\n");
                     }
+                });
 
-                    @Override
-                    public void onResponse(Call call, final Response response) throws IOException {
-                        final TextView tv = findViewById(R.id.list);
-                        final String res = response.body().string();
-                        Log.i(TAG, "onResponse: " + res);
-                        LoginActivity.this.runOnUiThread(new Runnable() {
+
+            }
+        });
+
+
+        findViewById(R.id.getCourseList).setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+
+                final Request request = new Request.Builder()
+                        .url("http://www.ahjxjy.cn/studentstudio/ajax-course-list?type=studying&courseType=0&getschoolcode=003&studyYear=&studyTerm=&courseName=")
+                        .method("POST", new RequestBody() {
                             @Override
-                            public void run() {
-                                try {
-                                    tv.append(JsonFormateUtil.formatJson(res) + "\n");
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
+                            public MediaType contentType() {
+                                return null;
                             }
-                        });
 
+                            @Override
+                            public void writeTo(BufferedSink sink) throws IOException {
+
+                            }
+                        })
+//                        .addHeader("Cookie", "ASP.NET_SessionId=unestvsstmq0nxbe0053edeb; auth=0102535F805D48C2D608FE531FEA8711C3D6080016680073006F00660061006E006500700079007A00760067002D0078006200730034006300640032003000670000012F00FFA72219F26454785012FC48D22FD0DE6A9DFD3FB7")
+                        .addHeader("cache-control", "no-cache")
+                        .addHeader("postman-token", "9282cee6-4c60-4761-a5af-3422be56be9a")
+                        .build();
+
+
+                HttpManager.getInstance().doRequest(request, new HttpManager.OnResponse() {
+                    @Override
+                    public void onResponse(Call call, Response response, String resultJson) {
+                        final TextView tv = (TextView) findViewById(R.id.courseList);
+                        Log.i(TAG, "onResponse: " + resultJson);
+                        tv.append(resultJson + "\n");
                     }
                 });
 
@@ -354,19 +229,11 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         findViewById(R.id.pass).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
-
-
-                EditText pasid = findViewById(R.id.passId);
-
-
+                EditText pasid = (EditText) findViewById(R.id.passId);
                 Toast.makeText(LoginActivity.this, "pass start ing", Toast.LENGTH_SHORT).show();
 
                 //点击获取个人信息
-
-                OkHttpClient client = new OkHttpClient();
-
                 String url = String.format("http://www.ahjxjy.cn/study/studying/recordVideoPosition?courseOpenId=gbrqan2ppl1jeegaopet9g&cellId=%s&schoolCode=003&position=2004.29166", pasid.getText().toString().isEmpty() ? "nv9bad6poltnuzclvgtc-a" : pasid.getText().toString());
-
                 final Request request = new Request.Builder()
 //                        .url("http://www.ahjxjy.cn/study/studying/recordVideoPosition?courseOpenId=gbrqan2ppl1jeegaopet9g&cellId=“+ pasid.getText()+”+“&schoolCode=003&position=2004.29166").method("POST", new RequestBody() {
                         .url(url).method("POST", new RequestBody() {
@@ -380,45 +247,18 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
                             }
                         })
-                        .addHeader("Cookie", "ASP.NET_SessionId=unestvsstmq0nxbe0053edeb; auth=0102535F805D48C2D608FE531FEA8711C3D6080016680073006F00660061006E006500700079007A00760067002D0078006200730034006300640032003000670000012F00FFA72219F26454785012FC48D22FD0DE6A9DFD3FB7")
+//                        .addHeader("Cookie", "ASP.NET_SessionId=unestvsstmq0nxbe0053edeb; auth=0102535F805D48C2D608FE531FEA8711C3D6080016680073006F00660061006E006500700079007A00760067002D0078006200730034006300640032003000670000012F00FFA72219F26454785012FC48D22FD0DE6A9DFD3FB7")
                         .addHeader("cache-control", "no-cache")
                         .addHeader("postman-token", "9282cee6-4c60-4761-a5af-3422be56be9a")
                         .build();
 
-                client.newCall(request).enqueue(new Callback() {
+
+                HttpManager.getInstance().doRequest(request, new HttpManager.OnResponse() {
                     @Override
-                    public void onFailure(Call call, final IOException e) {
-                        final TextView tv = findViewById(R.id.passLog);
-                        tv.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    tv.setText(e.getMessage());
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-
-                            }
-                        }, 0);
-
-                    }
-
-                    @Override
-                    public void onResponse(Call call, final Response response) throws IOException {
-                        final TextView tv = findViewById(R.id.passLog);
-                        final String res = response.body().string();
-                        Log.i(TAG, "onResponse: " + res);
-                        LoginActivity.this.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    tv.append(JsonFormateUtil.formatJson(res) + "\n");
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        });
-
+                    public void onResponse(Call call, Response response, String resultJson) {
+                        final TextView tv = (TextView) findViewById(R.id.passLog);
+                        Log.i(TAG, "onResponse: " + resultJson);
+                        tv.append(JsonFormateUtil.formatJson(resultJson) + "\n");
                     }
                 });
 
@@ -490,7 +330,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         String userKey = "350104199603064428";
 
         String pwd = "064428";
-        String verifycode = "064428";
+        String verifycode = "";
 
 
         if (!getInputText((TextView) findViewById(R.id.userName)).isEmpty()) {
@@ -506,7 +346,7 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
         String userName = "stu_" + userKey;
         //verifycode
 
-        String url = String.format("http://www.ahjxjy.cn/users/login?stuOrTea=stu_&userKey=%s&username=%s&pwd=%s", userKey, userName, pwd, verifycode);
+        String url = String.format("http://www.ahjxjy.cn/users/login?stuOrTea=stu_&userKey=%s&username=%s&pwd=%s%s", userKey, userName, pwd, verifycode);
 
 
         Request request = new Request.Builder()
@@ -523,43 +363,45 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
 
                 .build();
 
-            HttpManager.getInstance().doRequest(request, new HttpManager.OnResponse() {
+        HttpManager.getInstance().doRequest(request, new HttpManager.OnResponse() {
 
 
-                @Override
-                public void onResponse(Call call, Response response, String result) {
+            @Override
+            public void onResponse(Call call, Response response, String result) {
 
 
-                    Log.i(TAG, "result=>\n" + JsonFormateUtil.formatJson(result));
+                Log.i(TAG, "result=>\n" + JsonFormateUtil.formatJson(result));
 
-                    final TextView tv = findViewById(R.id.loginLog);
-                    String pattern = "欢迎您\\S*?！";
-                    Pattern r = Pattern.compile(pattern);
-                    Matcher m = r.matcher(result);
-
-
-                    String str = "登录失败";
-                    if (m.find()) {
-                        System.out.println("Found value: " + m.group(0));
-                        str = m.group(0);
-                    } else {
-                        System.out.println("NO MATCH");
-                        str = "未发现登录信息";
+                final TextView tv = (TextView) findViewById(R.id.loginLog);
+                String pattern = "欢迎您\\S*?！";
+                Pattern r = Pattern.compile(pattern);
+                Matcher m = r.matcher(result);
 
 
-                        donlowVerCode(verifycodeImg, HttpManager.getInstance().getClient());
-                        verifycodeImg.setOnClickListener(new OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                donlowVerCode(verifycodeImg, HttpManager.getInstance().getClient());
-                            }
-                        });
+                String str = "登录失败";
+                if (m.find()) {
+                    System.out.println("Found value: " + m.group(0));
+                    str = m.group(0);
+                } else {
+                    System.out.println("NO MATCH");
+                    str = "未发现登录信息";
 
-                    }
-                    tv.setText(str);
+
+                    donlowVerCode(verifycodeImg, HttpManager.getInstance().getClient());
+                    verifycodeImg.setOnClickListener(new OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            donlowVerCode(verifycodeImg, HttpManager.getInstance().getClient());
+                        }
+                    });
 
                 }
-            });
+                tv.setText(str);
+                CourseListActivity.titleText = str;
+
+
+            }
+        });
 
 
     }
@@ -696,6 +538,10 @@ public class LoginActivity extends Activity implements LoaderCallbacks<Cursor> {
                         android.R.layout.simple_dropdown_item_1line, emailAddressCollection);
 
         mEmailView.setAdapter(adapter);
+    }
+
+    public void toCourseListActivity(View view) {
+       CourseListActivity.start(this);
     }
 
 
